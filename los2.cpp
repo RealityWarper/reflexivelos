@@ -1,0 +1,173 @@
+#include <ncurses.h>
+#include <string.h>
+#include <cstdlib>
+#include <time.h>
+
+#define f(x,y) for (int x = 0; x < y; ++x)
+#define ROW 1000
+#define COL 1000
+
+int adx[9] = {-1, 0, 1, -1, 0, 1, -1, 0, 1}, ady[9] = {1, 1, 1, 0, 0, 0, -1, -1, -1};
+int row, col, px, py, ch;
+bool rock[ROW][COL];
+bool bold[ROW][COL];
+
+void initialize() {
+	initscr();
+	noecho();
+	keypad(stdscr, TRUE);
+	cbreak();
+	start_color();
+	init_pair(1, COLOR_YELLOW, COLOR_BLACK);
+	init_pair(2, COLOR_GREEN, COLOR_BLACK);
+	curs_set(FALSE);
+	srand((unsigned) time(NULL));
+	
+	row = 20, col = 40;
+	px = col/2, py = row/2;
+	f(i,row) f(j,col) if (i == 0 || i == row-1 || j == 0 || j == col-1 || rand()%13 < 4) rock[i][j] = true;
+	f(i,row) f(j,col) if (rand()%3 == 0) bold[i][j] = true;
+}
+
+void moveplayer(int dir) {
+	if ((px+adx[dir] >= 0) && (px+adx[dir] < col) && (py+ady[dir] >= 0) && (py+ady[dir] < row)) {
+		if (!rock[py+ady[dir]][px+adx[dir]]) {
+			px += adx[dir];
+			py += ady[dir];
+		}
+	}
+}
+
+int ccw(int x1, int y1, int x2, int y2, int x3, int y3) {	// positive if they are counterclockwise
+	return (x1*y2 + x2*y3 + x3*y1 - x1*y3 - x2*y1 - x3*y2);
+}
+
+void trace(int dir, int n, int h) {	// runs in O(N), point to point line of sight that also checks intermediate points
+	int topx[n+2], topy[n+2], botx[n+2], boty[n+2];	// convex hull of obstructions
+	int curt = 0, curb = 0;
+	int s[2][2] = {{0, 0}, {0, 0}};	// too lazy to think of real variable names
+	topx[0] = botx[0] = boty[0] = 0, topy[0] = 1;
+	for (int ad1 = 1, ad2[2] = {0, 0}, eps[2] = {0, n-1}; ad1 <= n; ++ad1) {
+		f(i,2) {
+			eps[i] += h;	// good old Bresenham
+			if (eps[i] >= n) {
+				eps[i] -= n;
+				++ad2[i];
+			}
+		}
+		f(i,2) if (ccw(topx[s[!i][1]], topy[s[!i][1]], botx[s[i][0]], boty[s[i][0]], ad1, ad2[i]+i) <= 0) return;
+		int cx[2] = {ad1, ad1}, cy[2] = {ad2[0], ad2[1]};
+		f(i,2) {
+			if (dir&1) cx[i] = -cx[i];
+			if (dir&2) cy[i] = -cy[i];
+			if (dir&4) cx[i] ^= cy[i], cy[i] ^= cx[i], cx[i] ^= cy[i];
+			cx[i] += px, cy[i] += py;
+			
+			if (ccw(topx[s[i][1]], topy[s[i][1]], botx[s[!i][0]], boty[s[!i][0]], ad1, ad2[i]+1-i) > 0) {
+				if (rock[cy[i]][cx[i]]) {
+					if (bold[cy[i]][cx[i]]) mvaddch(cy[i], cx[i], '*' | A_BOLD | COLOR_PAIR(2));
+					else mvaddch(cy[i], cx[i], '*' | COLOR_PAIR(2));
+				} else mvaddch(cy[i], cx[i], '.' | COLOR_PAIR(1));
+			}
+		}
+		
+		if (rock[cy[0]][cx[0]]) {	// update convex hull
+			++curb;
+			botx[curb] = ad1, boty[curb] = ad2[0]+1;
+			if (ccw(botx[s[0][0]], boty[s[0][0]], topx[s[1][1]], topy[s[1][1]], ad1, ad2[0]+1) >= 0) return;
+			if (ccw(topx[s[0][1]], topy[s[0][1]], botx[s[1][0]], boty[s[1][0]], ad1, ad2[0]+1) >= 0) {
+				s[1][0] = curb;
+				while (s[0][1] < curt && ccw(topx[s[0][1]], topy[s[0][1]], topx[s[0][1]+1], topy[s[0][1]+1], ad1, ad2[0]+1) >= 0) ++s[0][1];
+			}
+			while (curb > 1 && ccw(botx[curb-2], boty[curb-2], botx[curb-1], boty[curb-1], ad1, ad2[0]+1) >= 0) {
+				if (s[1][0] == curb) --s[1][0];
+				--curb;
+				botx[curb] = botx[curb+1], boty[curb] = boty[curb+1];
+			}
+		}
+		
+		if (rock[cy[1]][cx[1]]) {	// same as above
+			++curt;
+			topx[curt] = ad1, topy[curt] = ad2[1];
+			if (ccw(botx[s[1][0]], boty[s[1][0]], topx[s[0][1]], topy[s[0][1]], ad1, ad2[1]) >= 0) return;
+			if (ccw(topx[s[1][1]], topy[s[1][1]], botx[s[0][0]], boty[s[0][0]], ad1, ad2[1]) >= 0) {
+				s[1][1] = curt;
+				while (s[0][0] < curb && ccw(botx[s[0][0]], boty[s[0][0]], botx[s[0][0]+1], boty[s[0][0]+1], ad1, ad2[1]) <= 0) ++s[0][0];
+			}
+			while (curt > 1 && ccw(topx[curt-2], topy[curt-2], topx[curt-1], topy[curt-1], ad1, ad2[1]) <= 0) {
+				if (s[1][1] == curt) --s[1][1];
+				--curt;
+				topx[curt] = topx[curt+1], topy[curt] = topy[curt+1];
+			}
+		}
+	}
+}
+
+void showdir(int dir, int dis) {	// generalization of Bresenham's, runs in O(N^3)
+	int cx, cy;
+	for (int q = 1; q <= dis; ++q) f(p,q+1) {
+		for (int ad1 = 1, ad2[2] = {0, 0}, s[2] = {0, q-1}, eps[2] = {0, q-1}; ad1 <= dis && s[0] <= s[1]; ++ad1) f(i,2) {
+			eps[i] += p;
+			if (eps[i] >= q) {
+				eps[i] -= q;
+				++ad2[i];
+			}
+			cx = ad1, cy = ad2[i];
+			if (dir&1) cx = -cx;
+			if (dir&2) cy = -cy;
+			if (dir&4) cx ^= cy ^= cx ^= cy;
+			cx += px, cy += py;
+			//if (ad1*ad1 + ad2[i]*ad2[i] <= dis*dis + 1) {	// screw circular view for now
+				if (rock[cy][cx]) {
+					if (bold[cy][cx]) mvaddch(cy, cx, '*' | A_BOLD | COLOR_PAIR(2));
+					else mvaddch(cy, cx, '*' | COLOR_PAIR(2));
+				} else mvaddch(cy, cx, '.' | COLOR_PAIR(1));
+			//}
+			if (rock[cy][cx]) {
+				if (i == 0) s[i] += q-eps[i], eps[i] = 0, ++ad2[0];
+				if (i == 1) s[i] -= eps[i]+1, eps[i] = q-1, --ad2[1];
+			}
+		}
+	}
+}
+
+bool toggle = false;
+
+void showgame() {
+	erase();
+	
+	f(dir, 8) {
+		if (toggle) showdir(dir, 35);
+		else f(i,36) trace(dir, 35, i);
+	}
+	
+	mvaddch(py, px, '@' | A_BOLD);
+	
+	mvprintw(row+1, 0, "Numpad moves, 'q' quits.");
+	refresh();
+}
+
+void playgame() {
+	while (1) {
+		showgame();
+		ch = getch();
+		if (ch == 'q') break;
+		if (ch >= '1' && ch <= '9') moveplayer(ch-'1');
+		if (ch == ' ') toggle = !toggle;
+		if (ch >= 'a' && ch <= 'z') toggle = false;
+	}
+}
+
+void cleanup() {
+	endwin();
+}
+
+int main() {
+	initialize();
+	
+	playgame();
+	
+	cleanup();
+	
+	return 0;
+}
