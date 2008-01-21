@@ -23,7 +23,7 @@ void initialize() {
 	curs_set(FALSE);
 	srand((unsigned) time(NULL));
 	
-	row = 20, col = 40;
+	row = 20, col = 60;
 	px = col/2, py = row/2;
 	f(i,row) f(j,col) if (i == 0 || i == row-1 || j == 0 || j == col-1 || rand()%13 < 4) rock[i][j] = true;
 	f(i,row) f(j,col) if (rand()%3 == 0) bold[i][j] = true;
@@ -38,14 +38,17 @@ void moveplayer(int dir) {
 	}
 }
 
-int ccw(int x1, int y1, int x2, int y2, int x3, int y3) {	// positive if they are counterclockwise
+int ccw(int x1, int y1, int x2, int y2, int x3, int y3) {	// positive iff they are counterclockwise
 	return (x1*y2 + x2*y3 + x3*y1 - x1*y3 - x2*y1 - x3*y2);
 }
 
-void trace(int dir, int n, int h) {	// runs in O(N), point to point line of sight that also checks intermediate points
+// runs in O(N), "point" (read: unit length segment) to "point" line of sight that also checks intermediate "point"s.
+// Gives identical results to the other algorithm, amazingly. Both are equivalent to checking for digital lines.
+// you see those inner loops? Amortized time. Each while loop is entered at most N times, total.
+void trace(int dir, int n, int h) {
 	int topx[n+2], topy[n+2], botx[n+2], boty[n+2];	// convex hull of obstructions
-	int curt = 0, curb = 0;
-	int s[2][2] = {{0, 0}, {0, 0}};	// too lazy to think of real variable names
+	int curt = 0, curb = 0;	// size of top and bottom convex hulls
+	int s[2][2] = {{0, 0}, {0, 0}};	// too lazy to think of real variable names, four critical points on the convex hulls - these four points determine what is visible
 	topx[0] = botx[0] = boty[0] = 0, topy[0] = 1;
 	for (int ad1 = 1, ad2[2] = {0, 0}, eps[2] = {0, n-1}; ad1 <= n; ++ad1) {
 		f(i,2) {
@@ -55,7 +58,7 @@ void trace(int dir, int n, int h) {	// runs in O(N), point to point line of sigh
 				++ad2[i];
 			}
 		}
-		f(i,2) if (ccw(topx[s[!i][1]], topy[s[!i][1]], botx[s[i][0]], boty[s[i][0]], ad1, ad2[i]+i) <= 0) return;
+		f(i,2) if (ccw(topx[s[!i][1]], topy[s[!i][1]], botx[s[i][0]], boty[s[i][0]], ad1, ad2[i]+i) <= 0) return;	// the relevant region is no longer visible. If we don't exit the loop now, strange things happen.
 		int cx[2] = {ad1, ad1}, cy[2] = {ad2[0], ad2[1]};
 		f(i,2) {
 			if (dir&1) cx[i] = -cx[i];
@@ -71,16 +74,16 @@ void trace(int dir, int n, int h) {	// runs in O(N), point to point line of sigh
 			}
 		}
 		
-		if (rock[cy[0]][cx[0]]) {	// update convex hull
+		if (rock[cy[0]][cx[0]]) {	// new obstacle, update convex hull
 			++curb;
 			botx[curb] = ad1, boty[curb] = ad2[0]+1;
-			if (ccw(botx[s[0][0]], boty[s[0][0]], topx[s[1][1]], topy[s[1][1]], ad1, ad2[0]+1) >= 0) return;
+			if (ccw(botx[s[0][0]], boty[s[0][0]], topx[s[1][1]], topy[s[1][1]], ad1, ad2[0]+1) >= 0) return;	// the obstacle obscures everything
 			if (ccw(topx[s[0][1]], topy[s[0][1]], botx[s[1][0]], boty[s[1][0]], ad1, ad2[0]+1) >= 0) {
-				s[1][0] = curb;
+				s[1][0] = curb;	// updating visible region
 				while (s[0][1] < curt && ccw(topx[s[0][1]], topy[s[0][1]], topx[s[0][1]+1], topy[s[0][1]+1], ad1, ad2[0]+1) >= 0) ++s[0][1];
 			}
-			while (curb > 1 && ccw(botx[curb-2], boty[curb-2], botx[curb-1], boty[curb-1], ad1, ad2[0]+1) >= 0) {
-				if (s[1][0] == curb) --s[1][0];
+			while (curb > 1 && ccw(botx[curb-2], boty[curb-2], botx[curb-1], boty[curb-1], ad1, ad2[0]+1) >= 0) {	// not convex anymore, delete a point
+				if (s[1][0] == curb) --s[1][0];	// s[0][0] won't be a problem
 				--curb;
 				botx[curb] = botx[curb+1], boty[curb] = boty[curb+1];
 			}
@@ -103,12 +106,14 @@ void trace(int dir, int n, int h) {	// runs in O(N), point to point line of sigh
 	}
 }
 
-void showdir(int dir, int dis) {	// generalization of Bresenham's, runs in O(N^3)
+// The "other algorithm" - based on generalization of Bresenham, runs in O(N^3), and thus less than optimal. An earlier version of this ran in O(N^4), because it checked each value of s independently.
+// Easier to understand, easier to remember, easier to code, easier to debug. Never uses multiplictaion. In practice, it's probably faster as well...
+void showdir(int dir, int dis) {
 	int cx, cy;
 	for (int q = 1; q <= dis; ++q) f(p,q+1) {
 		for (int ad1 = 1, ad2[2] = {0, 0}, s[2] = {0, q-1}, eps[2] = {0, q-1}; ad1 <= dis && s[0] <= s[1]; ++ad1) f(i,2) {
 			eps[i] += p;
-			if (eps[i] >= q) {
+			if (eps[i] >= q) {	// this should look familiar
 				eps[i] -= q;
 				++ad2[i];
 			}
@@ -123,7 +128,7 @@ void showdir(int dir, int dis) {	// generalization of Bresenham's, runs in O(N^3
 					else mvaddch(cy, cx, '*' | COLOR_PAIR(2));
 				} else mvaddch(cy, cx, '.' | COLOR_PAIR(1));
 			//}
-			if (rock[cy][cx]) {
+			if (rock[cy][cx]) {	// update range of possibilities for s
 				if (i == 0) s[i] += q-eps[i], eps[i] = 0, ++ad2[0];
 				if (i == 1) s[i] -= eps[i]+1, eps[i] = q-1, --ad2[1];
 			}
@@ -137,13 +142,13 @@ void showgame() {
 	erase();
 	
 	f(dir, 8) {
-		if (toggle) showdir(dir, 35);
-		else f(i,36) trace(dir, 35, i);
+		if (toggle) showdir(dir, 60);	// old algorithm
+		else f(i,61) trace(dir, 60, i);	// new one!
 	}
 	
 	mvaddch(py, px, '@' | A_BOLD);
 	
-	mvprintw(row+1, 0, "Numpad moves, 'q' quits.");
+	mvprintw(row+1, 0, "Numpad moves, 'q' quits, space toggles between algorithms.");
 	refresh();
 }
 
