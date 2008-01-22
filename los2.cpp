@@ -107,7 +107,7 @@ void trace(int dir, int n, int h) {
 }
 
 // The "other algorithm" - based on generalization of Bresenham, runs in O(N^3), and thus less than optimal. An earlier version of this ran in O(N^4), because it checked each value of s independently.
-// Easier to understand, easier to remember, easier to code, easier to debug. Never uses multiplictaion. In practice, it's probably faster as well...
+// Easier to understand, easier to remember, easier to code, easier to debug. Never uses multiplictaion. Slower!
 void showdir(int dir, int dis) {
 	int cx, cy;
 	for (int q = 1; q <= dis; ++q) f(p,q+1) {
@@ -138,17 +138,24 @@ void showdir(int dir, int dis) {
 
 bool toggle = false;
 
+int call[2] = {1, 1};
+clock_t timer[2];
+
 void showgame() {
 	erase();
 	
+	++call[toggle];
+	clock_t start = clock();
 	f(dir, 8) {
-		if (toggle) showdir(dir, 60);	// old algorithm
-		else f(i,61) trace(dir, 60, i);	// new one!
+		if (toggle) showdir(dir, 10);	// old algorithm
+		else f(i,11) trace(dir, 10, i);	// new one!
 	}
+	timer[toggle] += clock()-start;
 	
 	mvaddch(py, px, '@' | A_BOLD);
 	
 	mvprintw(row+1, 0, "Numpad moves, 'q' quits, space toggles between algorithms.");
+	mvprintw(row+2, 0, "New alg average time: %f,\tOld alg average time: %f", timer[0]/((double) call[0]), timer[1]/((double) call[1]));
 	refresh();
 }
 
@@ -160,6 +167,10 @@ void playgame() {
 		if (ch >= '1' && ch <= '9') moveplayer(ch-'1');
 		if (ch == ' ') toggle = !toggle;
 		if (ch >= 'a' && ch <= 'z') toggle = false;
+		if (ch == 'r') {
+			moveplayer(rand()%9);
+			toggle = rand()%2;
+		}
 	}
 }
 
