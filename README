@@ -11,6 +11,8 @@ I know nothing about cursed libraries written for Windows, other than their exis
 
 Usage:
 
-los2 is plug and play. It's just a line of sight demo, after all... maze, on the other hand, expects an input file containing a valid description of a grid-manifold. If no file is given, it looks for a file called "maze.txt" in the current directory.
+los2 wants a maximum distance: "los2 60", for instance, is equivalent to putting no bounds on the distance of the line of sight. The default distance is 10.
+
+maze expects an input file containing a valid description of a grid-manifold. If no file is given, it looks for a file called "maze.txt" in the current directory.
 
 If you want to try out the random manifolds, use "maze -r". Follow that up with how big you want the manifold to be (default is 1000 locations). "maze -r 40" tends to produce very interesting results, as well.

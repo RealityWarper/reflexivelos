@@ -136,6 +136,8 @@ void showdir(int dir, int dis) {
 	}
 }
 
+int distance;
+
 bool toggle = false;
 
 int call[2] = {1, 1};
@@ -147,14 +149,14 @@ void showgame() {
 	++call[toggle];
 	clock_t start = clock();
 	f(dir, 8) {
-		if (toggle) showdir(dir, 10);	// old algorithm
-		else f(i,11) trace(dir, 10, i);	// new one!
+		if (toggle) showdir(dir, distance);	// old algorithm
+		else f(i,distance+1) trace(dir, distance, i);	// new one!
 	}
 	timer[toggle] += clock()-start;
 	
 	mvaddch(py, px, '@' | A_BOLD);
 	
-	mvprintw(row+1, 0, "Numpad moves, 'q' quits, space toggles between algorithms.");
+	mvprintw(row+1, 0, "Numpad moves, 'q' quits, space toggles between algorithms, 'r' is random.");
 	mvprintw(row+2, 0, "New alg average time: %f,\tOld alg average time: %f", timer[0]/((double) call[0]), timer[1]/((double) call[1]));
 	refresh();
 }
@@ -178,7 +180,10 @@ void cleanup() {
 	endwin();
 }
 
-int main() {
+int main(int argc, char **argv) {
+	distance = 10;
+	if (argc > 1) distance = atoi(argv[1]);
+	
 	initialize();
 	
 	playgame();
