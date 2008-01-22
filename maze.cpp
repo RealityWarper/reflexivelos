@@ -17,13 +17,12 @@ using namespace std;
 int mov[PL][8], rotor[PL][8], pl = 0;	// rotor is for cycles which leave you rotated, pl is number of places
 bool mirror[PL][8];	// does the connection reverse chirality?
 
-int ground[PL];	// colors, doors, tress
+int ground[PL];	// colors, doors, trees
 
 // 0 is down, 1 is down-right, 2 is right, 3 is right-up, etc: rotating is adding and mirroring is subtracting
 int trans[9] = {7, 0, 1, 6, -1, 2, 5, 4, 3}, adx[8] = {0, 1, 1, 1, 0, -1, -1, -1}, ady[8] = {1, 1, 0, -1, -1, -1, 0, 1};
 int row, col, centerx, centery, rocks, rspot, colors[MONS], mons = 0;
 
-string filepath = "maze.txt";
 char letters[MONS];
 
 struct pos {
@@ -292,7 +291,7 @@ void getchart(int w, int h, FILE *fin) {
 	}
 }
 
-bool getmap() {
+bool getmap(string filepath) {
 	player.grid = player.rot = 0, player.mir = 1;
 	f(i,PL) f(j,8) mov[i][j] = -1, rotor[i][j] = 0, mirror[i][j] = false;
 	
@@ -353,7 +352,7 @@ int checkmap() {
 	return -1;
 }
 
-// O(dis^3) reflexive line of sight using the mathematical formalism of digital lines.
+// O(dis^3) symmetric line of sight using the mathematical formalism of digital lines.
 void showdir(int dir, int dis) {
 	int changed1[8] = {2, 6, 2, 6, 0, 4, 0, 4}, changed2[8] = {1, 7, 3, 5, 1, 3, 7, 5};	// don't ask
 	int dir1 = changed1[dir], dir2 = changed2[dir], ndir;	// dir1 is straight, dir2 is diagonal
@@ -441,6 +440,7 @@ void playgame() {
 int main(int argc, char **argv) {
 	initialize();
 	
+	string filepath = "maze.txt";
 	if (argc > 1) filepath = argv[1];
 	
 	if (filepath[0] == '-') {
@@ -452,7 +452,7 @@ int main(int argc, char **argv) {
 			randmap(size, iter);
 		//} while (checkmap() < 0);
 	}
-	else getmap();
+	else getmap(filepath);
 	
 	int x = checkmap();
 	if (x >= 0) {
