@@ -4,7 +4,7 @@ void randmap(int size, int iter) {
 	testinit(size);
 	rspot = player.grid = player.rot = 0, player.mir = 1;
 	f(i,size) f(j,8) mov[i][j] = -1, rotor[i][j] = 0, mirror[i][j] = false;
-	f(i,size) ground[i] = (rand()%5)*(rand()%2)*(rand()%2)*(rand()%2) + (rand()%3)*(rand()%2)*(rand()%2)*(rand()%2)*16;
+	f(i,size) ground[i] = (rand()%5)*(!(rand()%100)) + (rand()%3)*(rand()%2)*(rand()%2)*(rand()%2)*16;
 	
 	pos edges[8*size+8];
 	
@@ -22,7 +22,7 @@ void randmap(int size, int iter) {
 		if (canglue(first, second)) glue(first, second);
 	}
 	
-	f(i,iter/2) {
+	f(i,iter/5) {
 		pos first = edges[rand()%(size*8)], second = edges[rand()%(size*8)];
 		if (!first.move(0) && !first.move(2) && !first.move(1) && !second.move(4) && !second.move(6) && !second.move(5)) {
 			first.patch(1, second), second.patch(5, first);

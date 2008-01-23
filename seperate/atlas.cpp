@@ -61,7 +61,7 @@ bool getmap(string filepath) {
 			for (int j = st; j <= en; ++j) if (effect != '?' || rand()%2) ground[j] = col;
 		}
 	} else {
-		mvprintw(centery, centerx, "No map :?");
+		mvprintw(centery, centerx, "No map found at \"%s\".", filepath.c_str());
 		getch();
 		return false;
 	}

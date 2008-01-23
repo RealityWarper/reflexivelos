@@ -77,4 +77,8 @@ int checkmap();
 // symmetric line of sight using the mathematical formalism of digital lines.
 void showdir(int dir, int dis);
 
+void mem_draw(int g, int cx, int cy);
+
+void remember(int dis, int MEM);
+
 #endif

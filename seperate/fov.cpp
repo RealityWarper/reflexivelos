@@ -41,14 +41,14 @@ void trace(int dir, int n, int h) {
 		
 		f(i,2) if (ccw(topx[s[!i][1]], topy[s[!i][1]], botx[s[i][0]], boty[s[i][0]], ad1, ad2[i]+i) <= 0) return;	// the relevant region is no longer visible. If we don't exit the loop now, strange things happen.
 		
-		int cx[2] = {ad1, ad1}, cy[2] = {ad2[0], ad2[1]};
 		f(i,2) {
-			if (dir&1) cx[i] = -cx[i];
-			if (dir&2) cy[i] = -cy[i];
-			if (dir&4) cx[i] ^= cy[i], cy[i] ^= cx[i], cx[i] ^= cy[i];
+			int cx = ad1, cy = ad2[i];
+			if (dir&1) cx = -cx;
+			if (dir&2) cy = -cy;
+			if (dir&4) cx ^= cy, cy ^= cx, cx ^= cy;
 			
 			if (ccw(topx[s[i][1]], topy[s[i][1]], botx[s[!i][0]], boty[s[!i][0]], ad1, ad2[i]+1-i) > 0) {
-				if (inview(cx[i], cy[i], n)) draw(npos[i].grid, cx[i]+centerx, cy[i]+centery, moveable[i]);
+				if (inview(cx, cy, n)) draw(npos[i].grid, cx+centerx, cy+centery, moveable[i]);
 			}
 		}
 		

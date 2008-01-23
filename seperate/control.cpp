@@ -13,16 +13,19 @@ void initialize() {
 	init_pair(5, COLOR_BLACK, COLOR_BLACK);
 	curs_set(FALSE);
 	
-	row = 20, col = 40;
+	row = 20, col = 20;
 	centerx = col/2, centery = row/2;
 	
 	srand((unsigned) time(NULL));
 }
 
 pos monster[MONS];
+bool mem_toggle = false;
 
 void showgame() {
 	erase();
+	
+	if (mem_toggle) remember(10, 101);
 	
 	f(dir, 8) showdir(dir, 10);
 	
@@ -59,6 +62,7 @@ void playgame() {
 		if (ch == '|') player.reflect();
 		if ((ch == ',' || ch == 'p' || ch == 'g') && player.grid == rspot) rspot = -1, ++rocks;
 		if (ch == 'd' && rocks) rspot = player.grid, --rocks;
+		if (ch == 'm') mem_toggle = !mem_toggle;
 		if (ch == 'f') if (!player.move(6) || blocked(player.grid)) {
 			if (blocked(player.grid)) player.move(2);
 			player = follow_wall(player);
@@ -97,8 +101,10 @@ int main(int argc, char **argv) {
 		//do {
 			randmap(size, iter);
 		//} while (checkmap() < 0);
+	} else if (!getmap(filepath)) {
+		endwin();
+		return 0;
 	}
-	else getmap(filepath);
 	
 	int x = checkmap();
 	if (x >= 0) {

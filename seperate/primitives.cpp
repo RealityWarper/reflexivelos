@@ -21,8 +21,6 @@ bool blocked(int g) {
 }
 
 void draw(int g, int cx, int cy, bool exists) {
-	/*attron(COLOR_PAIR(5));
-	attron(A_BOLD);//*/
 	if (g != player.grid) {
 		if (g != rspot) mvaddch(cy, cx, '.' | COLOR_PAIR(ground[g]%16));
 		else mvaddch(cy, cx, '*');	// rock
@@ -31,6 +29,15 @@ void draw(int g, int cx, int cy, bool exists) {
 	if (opaque(g)) mvaddch(cy, cx, '+' | COLOR_PAIR(ground[g]%16));
 	if (blocked(g)) mvaddch(cy, cx, '*' | A_BOLD | COLOR_PAIR(ground[g]%16));
 	if (!exists) mvaddch(cy, cx, '#' | A_BOLD);
-	/*attroff(COLOR_PAIR(5));
-	attroff(A_BOLD);//*/
+}
+
+void mem_draw(int g, int cx, int cy) {
+	attron(COLOR_PAIR(5));
+	attron(A_BOLD);
+	mvaddch(cy, cx, '.');
+	if (ground[g] >= 16 && ground[g] < 32 && g != player.grid && g != rspot) mvaddch(cy, cx, '+');
+	if (blocked(g)) mvaddch(cy, cx, '*');
+	if (g == -1) mvaddch(cy, cx, '#');
+	attroff(COLOR_PAIR(5));
+	attroff(A_BOLD);
 }
