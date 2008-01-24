@@ -32,7 +32,7 @@ void initialize() {
 }
 
 void moveplayer(int dir) {
-	if ((px+adx[dir] >= 0) && (py+ady[dir] >= 0) && (((px+adx[dir] < col) && (py+ady[dir] < row)) || from_file)) {
+	if ((px+adx[dir] >= 0) && (py+ady[dir] >= 0) && (((px+adx[dir] < col) && (py+ady[dir] < row)) || (from_file && (px+adx[dir] < COL) && (py+ady[dir] < ROW)))) {
 		if (!rock[py+ady[dir]][px+adx[dir]]) {
 			px += adx[dir];
 			py += ady[dir];
@@ -41,6 +41,7 @@ void moveplayer(int dir) {
 }
 
 void draw (int cx, int cy, int dis) {
+	if (!((cx >= 0) && (cy >= 0) && (((cx < col) && (cy < row)) || (from_file && (cx < COL) && (cy < ROW))))) return;
 	if ((cx-px)*(cx-px) + (cy-py)*(cy-py) <= dis*dis + 1) {	// circular view - can be changed if you like
 		if (!from_file) {
 			if (rock[cy][cx]) {

@@ -41,7 +41,7 @@ void moveplayer(int dir) {
 }
 
 void draw (int cx, int cy, int dis) {
-	//if (cx < 0 || cy < 0 || cx > col || cy > row) return;
+	if (!((cx >= 0) && (cy >= 0) && (((cx < col) && (cy < row)) || (from_file && (cx < COL) && (cy < ROW))))) return;
 	if ((cx-px)*(cx-px) + (cy-py)*(cy-py) <= dis*dis + 1) {	// circular view - can be changed if you like
 		if (!from_file) {
 			if (rock[cy][cx]) {
