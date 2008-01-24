@@ -11,6 +11,8 @@ int adx[9] = {-1, 0, 1, -1, 0, 1, -1, 0, 1}, ady[9] = {1, 1, 1, 0, 0, 0, -1, -1,
 int row, col, px, py, ch;
 bool rock[ROW][COL];
 bool bold[ROW][COL];
+char filechar[ROW][COL];
+bool from_file;
 
 void initialize() {
 	initscr();
@@ -30,10 +32,23 @@ void initialize() {
 }
 
 void moveplayer(int dir) {
-	if ((px+adx[dir] >= 0) && (px+adx[dir] < col) && (py+ady[dir] >= 0) && (py+ady[dir] < row)) {
+	if ((px+adx[dir] >= 0) && (py+ady[dir] >= 0) && (((px+adx[dir] < col) && (py+ady[dir] < row)) || from_file)) {
 		if (!rock[py+ady[dir]][px+adx[dir]]) {
 			px += adx[dir];
 			py += ady[dir];
+		}
+	}
+}
+
+void draw (int cx, int cy, int dis) {
+	if ((cx-px)*(cx-px) + (cy-py)*(cy-py) <= dis*dis + 1) {	// circular view - can be changed if you like
+		if (!from_file) {
+			if (rock[cy][cx]) {
+				if (bold[cy][cx]) mvaddch(cy, cx, '*' | A_BOLD | COLOR_PAIR(2));
+				else mvaddch(cy, cx, '*' | COLOR_PAIR(2));
+			} else mvaddch(cy, cx, '.' | COLOR_PAIR(1));
+		} else if (cx-px+col/2 >= 0 && cx-px+col/2 <= col && cy-py+row/2 >= 0 && cy-py+row/2 <= row) {
+			mvaddch(cy-py+row/2, cx-px+col/2, filechar[cy][cx]);
 		}
 	}
 }
@@ -67,10 +82,7 @@ void trace(int dir, int n, int h) {
 			cx[i] += px, cy[i] += py;
 			
 			if (ccw(topx[s[i][1]], topy[s[i][1]], botx[s[!i][0]], boty[s[!i][0]], ad1, ad2[i]+1-i) > 0) {
-				if (rock[cy[i]][cx[i]]) {
-					if (bold[cy[i]][cx[i]]) mvaddch(cy[i], cx[i], '*' | A_BOLD | COLOR_PAIR(2));
-					else mvaddch(cy[i], cx[i], '*' | COLOR_PAIR(2));
-				} else mvaddch(cy[i], cx[i], '.' | COLOR_PAIR(1));
+				draw(cx[i], cy[i], n);
 			}
 		}
 		
@@ -122,12 +134,7 @@ void showdir(int dir, int dis) {
 			if (dir&2) cy = -cy;
 			if (dir&4) cx ^= cy ^= cx ^= cy;
 			cx += px, cy += py;
-			//if (ad1*ad1 + ad2[i]*ad2[i] <= dis*dis + 1) {	// screw circular view for now
-				if (rock[cy][cx]) {
-					if (bold[cy][cx]) mvaddch(cy, cx, '*' | A_BOLD | COLOR_PAIR(2));
-					else mvaddch(cy, cx, '*' | COLOR_PAIR(2));
-				} else mvaddch(cy, cx, '.' | COLOR_PAIR(1));
-			//}
+			draw(cx, cy, dis);
 			if (rock[cy][cx]) {	// update range of possibilities for s
 				if (i == 0) s[i] += q-eps[i], eps[i] = 0, ++ad2[0];
 				if (i == 1) s[i] -= eps[i]+1, eps[i] = q-1, --ad2[1];
@@ -154,10 +161,11 @@ void showgame() {
 	}
 	timer[toggle] += clock()-start;
 	
-	mvaddch(py, px, '@' | A_BOLD);
+	if (!from_file) mvaddch(py, px, '@' | A_BOLD);
+	else mvaddch(row/2, col/2, '@' | A_BOLD);
 	
 	mvprintw(row+1, 0, "Numpad moves, 'q' quits, space toggles between algorithms, 'r' is random.");
-	mvprintw(row+2, 0, "New alg average time: %f,\tOld alg average time: %f", timer[0]/((double) call[0]), timer[1]/((double) call[1]));
+	mvprintw(row+2, 0, "New alg average ticks: %f,\tOld alg average ticks: %f", timer[0]/((double) call[0]), timer[1]/((double) call[1]));
 	refresh();
 }
 
@@ -180,11 +188,34 @@ void cleanup() {
 	endwin();
 }
 
+void readfile(char *filepath) {
+	f(i,ROW) f(j,COL) rock[i][j] = false;
+	FILE *fin = fopen(filepath, "r");
+	if (fin == NULL) return;
+	int curx = 0, cury = 0;
+	while (!feof(fin) && curx < COL && cury < ROW) {
+		char c = fgetc(fin);
+		if (c == '\n') {
+			++cury, curx = 0;
+			continue;
+		}
+		if (c == '#') rock[cury][curx] = true;
+		if (c == '@') px = curx, py = cury;
+		filechar[cury][curx] = c;
+		++curx;
+	}
+}
+
 int main(int argc, char **argv) {
 	distance = 10;
 	if (argc > 1) distance = atoi(argv[1]);
 	
 	initialize();
+	
+	if (argc > 2) {	// input from file!
+		readfile(argv[2]);
+		from_file = true;
+	} else from_file = false;
 	
 	playgame();
 	
