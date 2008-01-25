@@ -73,6 +73,7 @@ void trace(int dir, int n, int h) {
 			} else ++ad1[i];
 		}
 		f(i,2) if (ccw(topx[s[!i][1]], topy[s[!i][1]], botx[s[i][0]], boty[s[i][0]], ad1[i]+1-i, ad2[i]+i) <= 0) return;	// the relevant region is no longer visible. If we don't exit the loop now, strange things happen.
+		f(i,2) if (ccw(topx[s[!i][1]], topy[s[!i][1]], botx[s[i][0]], boty[s[i][0]], i, 1-i) == 0 && s[0][i] != 0) return;	// Those pesky corner cases. The line is exactly touching a corner of our square...
 		int cx[2] = {ad1[0], ad1[1]}, cy[2] = {ad2[0], ad2[1]};
 		f(i,2) {
 			if (dir&1) cx[i] = -cx[i];
