@@ -43,6 +43,8 @@ void showgame() {
 }
 
 void playgame() {
+	int moves[9] = {KEY_END, KEY_DOWN, KEY_NPAGE, KEY_LEFT, -1, KEY_RIGHT, KEY_HOME, KEY_UP, KEY_PPAGE};
+	
 	mons = MONS;
 	f(i,30) mons = min(mons, rand()%pl);
 	f(i,mons) {
@@ -60,7 +62,7 @@ void playgame() {
 		if (ch == '>') player.rotate(-2);
 		if (ch == '<') player.rotate(2);
 		if (ch == '|') player.reflect();
-		if ((ch == ',' || ch == 'p' || ch == 'g') && player.grid == rspot) rspot = -1, ++rocks;
+		if ((ch == ',' || ch == 'g') && player.grid == rspot) rspot = -1, ++rocks;
 		if (ch == 'd' && rocks) rspot = player.grid, --rocks;
 		if (ch == 'm') mem_toggle = !mem_toggle;
 		if (ch == 'f') if (!player.move(6) || blocked(player.grid)) {
@@ -71,8 +73,63 @@ void playgame() {
 				else player.move(7), player.rotate(4);
 			}
 		} else if (!blocked(player.grid)) player.move(2);
+		if (ch == 'l') {
+			curs_set(TRUE);
+			int xpos = 0, ypos = 0;
+			move(ypos+centery, xpos+centerx);
+			while (1) {
+				ch = getch();
+				f(i,9) if (ch == moves[i]) ch = i+'1';
+				if (ch >= '1' && ch <= '9' && ch != '5') {
+					xpos += adx[trans[ch-'1']], ypos += ady[trans[ch-'1']];
+					if (xpos > centerx) xpos = centerx;
+					if (ypos > centery) ypos = centery;
+					if (xpos < -centerx) xpos = -centerx;
+					if (ypos < -centery) ypos = -centery;
+				} else break;
+				move(ypos+centery, xpos+centerx);
+			}
+			curs_set(FALSE);
+			if (ch != 'q') genpath(xpos, ypos);
+		}
+		if (ch == 'd') {
+			pos tmp = player;
+			ch = getch();
+			f(i,9) if (ch == moves[i]) ch = i+'1';
+			if (ch >= '1' && ch <= '9') {
+				if (ch == '5' || tmp.move(trans[ch-'1'])) tmp.destroy();
+			}
+			ch = ' ';
+		}
+		if (ch == 'p') {
+			pos tmp = player;
+			int dir = 0;
+			ch = getch();
+			f(i,9) if (ch == moves[i]) ch = i+'1';
+			if (ch >= '1' && ch <= '9' && ch != '5') dir = trans[ch-'1'];
+			else continue;
+			if (dir%2 == 0) {
+				tmp.rotate(dir+2);
+				f(i,100) {
+					pos other(rand()%pl, ((rand()%8)/2)*2, (rand()%2)*2-1);
+					if (canglue(tmp, other)) {
+						glue(tmp, other);
+						break;
+					}
+				}
+			} else if (!tmp.move(dir+7) && !tmp.move(dir+1) && !tmp.move(dir)) {
+				f(i,100) {
+					pos other(rand()%pl, ((rand()%8)/2)*2, (rand()%2)*2-1);
+					if (!other.move(dir+3) && !other.move(dir+5) && !other.move(dir+4)) {
+						tmp.patch(dir, other), other.patch(dir+4, tmp);
+						break;
+					}
+				}
+			}
+			ch = ' ';
+		}
+		if (ch == 't') player.grid = rand()%pl, player.rot = ((rand()%8)/2)*2, player.mir = (rand()%2)*2-1;
 		
-		int moves[9] = {KEY_END, KEY_DOWN, KEY_NPAGE, KEY_LEFT, -1, KEY_RIGHT, KEY_HOME, KEY_UP, KEY_PPAGE};
 		f(i,9) if (ch == moves[i]) ch = i+'1';
 		if (ch >= '1' && ch <= '9' && ch != '5') {
 			player.move(trans[ch-'1']);

@@ -7,6 +7,8 @@
 #include <vector>
 #include <time.h>
 #include <string>
+#include <cmath>
+#include <list>
 
 #define f(x,y) for (int x = 0; x < y; ++x)
 #define ROW 1000
@@ -45,6 +47,8 @@ struct pos {
 	void patch(int dir, pos p2);
 	
 	int follow_wall();
+	
+	void destroy();
 };
 
 extern pos player;
@@ -80,5 +84,8 @@ void showdir(int dir, int dis);
 void mem_draw(int g, int cx, int cy);
 
 void remember(int dis, int MEM);
+
+// generate a random digital line of length n and height h
+void genpath(int n, int h);
 
 #endif

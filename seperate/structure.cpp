@@ -53,6 +53,16 @@ int pos::follow_wall() {	// different from the other one - no diagonals
 	return -1;
 }
 
+void pos::destroy() {
+	f(dir,8) {
+		pos tmp(grid, rot, mir);
+		if (tmp.move(dir)) {
+			int rdir1 = (dir*mir + rot + 16)%8, rdir2 = ((dir+4)*tmp.mir + tmp.rot + 16)%8;
+			mov[grid][rdir1] = mov[tmp.grid][rdir2] = -1;
+		}
+	}
+}
+
 pos player;
 
 pos follow_wall(pos p) {	// this is different - diagonal movement is allowed!

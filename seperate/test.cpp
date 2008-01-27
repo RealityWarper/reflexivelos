@@ -59,6 +59,10 @@ bool canglue(pos p1, pos p2) {	// I don't know why, but it seems to work
 			pos op1 = p1, op2 = p2;
 			//int num1 = p1.follow_wall(), num2 = p2.follow_wall();
 			int num1 = testfollow(p1), num2 = testfollow(p2);
+			
+			if (num1 == -1 && p1.move(7)) return false;
+			if (num2 == -1 && p2.move(7)) return false;
+			
 			if (!testpatch(op1, op2)) return false;
 			if (!testpatch(op2, op1)) return false;
 			if (num1+num2 > 0) {
@@ -77,6 +81,14 @@ bool canglue(pos p1, pos p2) {	// I don't know why, but it seems to work
 			
 			if (num1+num2 != 0) break;
 		} while (orig1.grid != p1.grid || orig1.mir != p1.mir || orig1.rot != p1.rot);
+		p1 = orig2, p2 = orig1;
+		p1.rotate(4), p2.rotate(4);
+		p1.reflect(), p2.reflect();
+	}
+	f(iter, 2) {	// just in case
+		pos orig1 = p1, orig2 = p2;
+		if (p1.follow_wall() == -1 && p1.move(7)) return false;
+		if (p2.follow_wall() == -1 && p2.move(7)) return false;
 		p1 = orig2, p2 = orig1;
 		p1.rotate(4), p2.rotate(4);
 		p1.reflect(), p2.reflect();
