@@ -1,0 +1,10 @@
+If you have ncurses, type make to compile this...
+
+Usage: maze [filename] will load a file to display
+maze -r will randomly generate a manifold
+maze -s will randomly generate a manifold with repetitive patterns
+
+pressing 'l' while exploring lets you draw a line
+pressing 'b' lets you block a neighboring square
+pressing 'p' lets you poke through a wall
+pressing 'm' either draws greyed out stuff that is not in your line of sight, or doesn't work...

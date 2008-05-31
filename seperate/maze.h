@@ -71,7 +71,9 @@ void testinit(int size);
 
 bool canglue(pos p1, pos p2);
 
-void randmap(int size, int iter);
+void randmap(int size, int iter1, int iter2, int iter3);
+
+void randmap2(int iter);
 
 bool getmap(string filepath);
 

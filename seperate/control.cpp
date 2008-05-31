@@ -25,7 +25,7 @@ bool mem_toggle = false;
 void showgame() {
 	erase();
 	
-	if (mem_toggle) remember(10, 101);
+	if (mem_toggle) remember(10, 41);
 	
 	f(dir, 8) showdir(dir, 10);
 	
@@ -92,12 +92,15 @@ void playgame() {
 			curs_set(FALSE);
 			if (ch != 'q') genpath(xpos, ypos);
 		}
-		if (ch == 'd') {
+		if (ch == 'b') {
 			pos tmp = player;
 			ch = getch();
 			f(i,9) if (ch == moves[i]) ch = i+'1';
 			if (ch >= '1' && ch <= '9') {
-				if (ch == '5' || tmp.move(trans[ch-'1'])) tmp.destroy();
+				if (ch == '5' || tmp.move(trans[ch-'1'])) {
+					tmp.destroy();
+					ground[tmp.grid] = (rand()%5)*(!(rand()%100)) + (rand()%3)*(!(rand()%8))*16;
+				}
 			}
 			ch = ' ';
 		}
@@ -150,14 +153,22 @@ int main(int argc, char **argv) {
 	string filepath = "maze.txt";
 	if (argc > 1) filepath = argv[1];
 	
-	if (filepath[0] == '-') {
+	if (filepath[0] == '-' && filepath[1] == 'r') {
 		int size = 1000;
 		if (argc > 2) size = atoi(argv[2]);
-		int iter = 10*size;
-		if (argc > 3) iter = atoi(argv[3]);
+		int iter1 = 4*size;
+		if (argc > 3) iter1 = atoi(argv[3]);
+		int iter2 = iter1/2;
+		if (argc > 4) iter2 = atoi(argv[4]);
+		int iter3 = 0;
+		if (argc > 5) iter3 = atoi(argv[5]);
 		//do {
-			randmap(size, iter);
+			randmap(size, iter1, iter2, iter3);
 		//} while (checkmap() < 0);
+	} else if (filepath[0] == '-' && filepath[1] == 's') {
+		int iter = 9;
+		if (argc > 2) iter = atoi(argv[2]);
+		randmap2(iter);
 	} else if (!getmap(filepath)) {
 		endwin();
 		return 0;

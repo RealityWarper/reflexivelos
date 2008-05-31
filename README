@@ -1,3 +1,5 @@
+NOTE: all of the newer stuff is located in the seperate/ directory.
+
 Build instructions for maze and los2 on Linux/Mac OS X:
 
 You have ncurses, right? Right.
@@ -11,8 +13,10 @@ I know nothing about cursed libraries written for Windows, other than their exis
 
 Usage:
 
-los2 wants a maximum distance: "los2 60", for instance, is equivalent to putting no bounds on the distance of the line of sight. The default distance is 10.
+los2 wants a maximum distance: "los2 80", for instance, is equivalent to putting no bounds on the distance of the line of sight. The default distance is 10. If you'd rather have the map read from a file than randomly generated, use "los2 [distance] [filename]".
 
 maze expects an input file containing a valid description of a grid-manifold. If no file is given, it looks for a file called "maze.txt" in the current directory.
 
 If you want to try out the random manifolds, use "maze -r". Follow that up with how big you want the manifold to be (default is 1000 locations). "maze -r 40" tends to produce very interesting results, as well.
+
+pfov is the same as los2, except it solves the "permissive field of view" problem instead of my "digital field of view" problem.

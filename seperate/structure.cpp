@@ -1,6 +1,6 @@
 #include "maze.h"
 
-int mov[PL][8], rotor[PL][8], pl = 0;	// rotor is for cycles which leave you rotated, pl is number of places
+int mov[PL][8], rotor[PL][8], pl = 1;	// rotor is for cycles which leave you rotated, pl is number of places
 bool mirror[PL][8];	// does the connection reverse chirality?
 
 // 0 is down, 1 is down-right, 2 is right, 3 is right-up, etc: rotating is adding and mirroring is subtracting
