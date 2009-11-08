@@ -6,11 +6,7 @@ void initialize() {
 	keypad(stdscr, TRUE);
 	cbreak();
 	start_color();
-	init_pair(1, COLOR_YELLOW, COLOR_BLACK);
-	init_pair(2, COLOR_RED, COLOR_BLACK);
-	init_pair(3, COLOR_BLUE, COLOR_BLACK);
-	init_pair(4, COLOR_GREEN, COLOR_BLACK);
-	init_pair(5, COLOR_BLACK, COLOR_BLACK);
+	f(i,8) init_pair(i, i, COLOR_BLACK);
 	curs_set(FALSE);
 	
 	row = 20, col = 20;
@@ -27,7 +23,9 @@ void showgame() {
 	
 	if (mem_toggle) remember(10, 41);
 	
+	clearbuff();
 	f(dir, 8) showdir(dir, 10);
+	showbuff();
 	
 	mvaddch(centery, centerx, '@' | A_BOLD);
 	
@@ -44,9 +42,10 @@ void showgame() {
 
 void playgame() {
 	int moves[9] = {KEY_END, KEY_DOWN, KEY_NPAGE, KEY_LEFT, -1, KEY_RIGHT, KEY_HOME, KEY_UP, KEY_PPAGE};
+	char vikeys[9] = {'b', 'j', 'n', 'h', -1, 'l', 'y', 'k', 'u'};
 	
 	mons = MONS;
-	f(i,30) mons = min(mons, rand()%pl);
+	f(i,100) mons = min(mons, rand()%pl);
 	f(i,mons) {
 		do monster[i].grid = rand()%pl; while (blocked(monster[i].grid) && monster[i].grid == 0);
 		monster[i].rot = 0, monster[i].mir = 1;
@@ -73,13 +72,13 @@ void playgame() {
 				else player.move(7), player.rotate(4);
 			}
 		} else if (!blocked(player.grid)) player.move(2);
-		if (ch == 'l') {
+		if (ch == 'L') {
 			curs_set(TRUE);
 			int xpos = 0, ypos = 0;
 			move(ypos+centery, xpos+centerx);
 			while (1) {
 				ch = getch();
-				f(i,9) if (ch == moves[i]) ch = i+'1';
+				f(i,9) if (ch == moves[i] || ch == vikeys[i]) ch = i+'1';
 				if (ch >= '1' && ch <= '9' && ch != '5') {
 					xpos += adx[trans[ch-'1']], ypos += ady[trans[ch-'1']];
 					if (xpos > centerx) xpos = centerx;
@@ -92,10 +91,10 @@ void playgame() {
 			curs_set(FALSE);
 			if (ch != 'q') genpath(xpos, ypos);
 		}
-		if (ch == 'b') {
+		if (ch == 'B') {
 			pos tmp = player;
 			ch = getch();
-			f(i,9) if (ch == moves[i]) ch = i+'1';
+			f(i,9) if (ch == moves[i] || ch == vikeys[i]) ch = i+'1';
 			if (ch >= '1' && ch <= '9') {
 				if (ch == '5' || tmp.move(trans[ch-'1'])) {
 					tmp.destroy();
@@ -108,7 +107,7 @@ void playgame() {
 			pos tmp = player;
 			int dir = 0;
 			ch = getch();
-			f(i,9) if (ch == moves[i]) ch = i+'1';
+			f(i,9) if (ch == moves[i] || ch == vikeys[i]) ch = i+'1';
 			if (ch >= '1' && ch <= '9' && ch != '5') dir = trans[ch-'1'];
 			else continue;
 			if (dir%2 == 0) {
@@ -131,9 +130,11 @@ void playgame() {
 			}
 			ch = ' ';
 		}
+		if (ch == 'V') f(i,pl) seen[i] = true;
+		if (ch == 'S') save();
 		if (ch == 't') player.grid = rand()%pl, player.rot = ((rand()%8)/2)*2, player.mir = (rand()%2)*2-1;
 		
-		f(i,9) if (ch == moves[i]) ch = i+'1';
+		f(i,9) if (ch == moves[i] || ch == vikeys[i]) ch = i+'1';
 		if (ch >= '1' && ch <= '9' && ch != '5') {
 			player.move(trans[ch-'1']);
 			if (blocked(player.grid)) player.move(trans[ch-'1']+4);

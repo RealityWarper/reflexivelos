@@ -21,7 +21,7 @@ void remember(int dis, int MEM) {
 		f(dir,8) if (dist[qx[st]+adx[dir]][qy[st]+ady[dir]] < dist[qx[st]][qy[st]] && mem[qx[st]+adx[dir]][qy[st]+ady[dir]].grid == -3) {
 			mem[qx[st]][qy[st]].grid = -3;
 		}
-		if (mem[qx[st]][qy[st]].grid >= 0) {
+		if (mem[qx[st]][qy[st]].grid >= 0 && seen[mem[qx[st]][qy[st]].grid]) {
 			f(dir,8) if (!visited[qx[st]+adx[dir]][qy[st]+ady[dir]]) {
 				qx[en] = qx[st]+adx[dir], qy[en] = qy[st]+ady[dir];
 				pos tmp = mem[qx[st]][qy[st]], tmp2 = mem[qx[en]][qy[en]];

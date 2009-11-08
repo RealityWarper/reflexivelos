@@ -31,6 +31,9 @@ extern int row, col, centerx, centery, rocks, rspot, colors[MONS], mons;
 extern char letters[MONS];
 
 extern int occupant[PL];
+extern bool seen[PL];
+
+extern bool drawbuff[100][100];
 
 struct pos {
 	int grid, rot, mir;
@@ -83,11 +86,16 @@ int checkmap();
 // symmetric line of sight using the mathematical formalism of digital lines.
 void showdir(int dir, int dis);
 
+void clearbuff();
+void showbuff();
+
 void mem_draw(int g, int cx, int cy);
 
 void remember(int dis, int MEM);
 
 // generate a random digital line of length n and height h
 void genpath(int n, int h);
+
+void save();
 
 #endif
