@@ -4,8 +4,21 @@ Usage: maze [filename] will load a file to display
 maze -r will randomly generate a manifold
 maze -s will randomly generate a manifold with repetitive patterns
 
-pressing 'l' while exploring lets you draw a line
+you can use hjklyubn, numpad, or arrow keys for movement.
+
+Most of the following commands only work in edit mode, which you can activate by pressing 'E':
+pressing 'l' while exploring lets you draw a line (currently disabled even in edit mode)
 pressing 'B' lets you block a neighboring square
-pressing 'p' lets you poke through a wall
+pressing 'p' glues the left hand wall to a random square (currently disabled)
+pressing 'P' glues the left hand wall to the left hand wall of the marked square
+pressing 'M' marks the current square (and its left hand wall) for later use
+pressing 'N' marks a new, unused wall
+pressing 'H' moves left AT ANY COST
+pressing 'c' changes color
+pressing 'C' changes type
+pressing 'W' makes the color white
+pressing 'V' copies the color of the marked square onto the current square
+pressing 'T' teleports to the marked square
+pressing 't' teleports to a random square
 pressing 'm' either draws greyed out stuff that is not in your line of sight, or doesn't work...
 pressing 'f' follows the right-hand wall

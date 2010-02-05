@@ -44,7 +44,7 @@ void showbuff() {
 void draw(int g, int cx, int cy, bool exists) {
 	if (g != player.grid) {
 		if (g != rspot) buffaddch(cy, cx, '.' | COLOR_PAIR(ground[g]%16));
-		else buffaddch(cy, cx, '*');	// rock
+		else buffaddch(cy, cx, ACS_DEGREE);	// rock
 		if (occupant[g] != -1) buffaddch(cy, cx, letters[occupant[g]] | COLOR_PAIR(colors[occupant[g]]));
 	} else buffaddch(cy, cx, '@');	// you see yourself in the distance
 	if (opaque(g)) buffaddch(cy, cx, '+' | COLOR_PAIR(ground[g]%16));

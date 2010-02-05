@@ -33,6 +33,8 @@ extern char letters[MONS];
 extern int occupant[PL];
 extern bool seen[PL];
 
+extern bool edit;
+
 extern bool drawbuff[100][100];
 
 struct pos {
@@ -54,7 +56,7 @@ struct pos {
 	void destroy();
 };
 
-extern pos player;
+extern pos player, marked;
 
 pos follow_wall(pos p);
 

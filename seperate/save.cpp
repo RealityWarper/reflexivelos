@@ -5,7 +5,7 @@ void save() {
 	if (fout != NULL) {
 		fprintf(fout, "%d %d\n", player.grid, rspot);
 		int tmp = player.grid;
-		f(g,pl) if (seen[g]) {
+		f(g,pl) /*if (seen[g])*/ {
 			fprintf(fout, "\n3 3\n");
 			pos p[4][4];	// row, column
 			f(i,4) f(j,4) p[i][j].grid = -1, p[i][j].rot = 0, p[i][j].mir = 1;
@@ -28,6 +28,12 @@ void save() {
 		}
 		player.grid = tmp;
 		fprintf(fout, "\n0 0\n");
+		int lasteq = 0;
+		f(g,pl+1) if (g == pl || ground[g] != ground[lasteq]) {
+			fprintf(fout, "\n%d %d %d", lasteq, g-1, ground[lasteq]);
+			lasteq = g;
+		}
+		fprintf(fout, "\n-1 -1 0\n");
 	} else return;
 	fclose(fout);
 }
